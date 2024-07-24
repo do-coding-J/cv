@@ -13,35 +13,34 @@ if [ ! -e CMakeLists.txt ]; then
     cat <<EOF >CMakeLists.txt
 cmake_minimum_required(VERSION 3.20)
 project(cv)
+set(CMAKE_INSTALL_PREFIX \${CMAKE_CURRENT_SOURCE_DIR})
 include(FetchContent)
-FetchContent_Declare(
-    opencv_contrib
-    GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
-    GIT_TAG 4.9.0
-)
-FetchContent_MakeAvailable(opencv_contrib)
 FetchContent_Declare(
     opencv
     GIT_REPOSITORY https://github.com/opencv/opencv.git
     GIT_TAG 4.9.0
 )
+FetchContent_Declare(
+    opencv_contrib
+    GIT_REPOSITORY https://github.com/opencv/opencv_contrib.git
+    GIT_TAG 4.9.0
+)
 set(BUILD_SHARED_LIBS OFF)
-# include(config_set.cmake)
-set(CMAKE_INSTALL_PREFIX ${PWD})
-set(EXTRA_MODULE_PATH \${opencv_contrib_SOURCE_DIR}/modules)
-FetchContent_MakeAvailable(opencv)
+set(EXTRA_MODULES_PATH \${opencv_contrib_SOURCE_DIR}/modules)
+FetchContent_MakeAvailable(opencv opencv_contrib)
 EOF
 fi
 
-# check opencv lib
 
-if [ ! -d include]; then
+# check opencv lib
+if [ ! -d include ]; then
     cmake -Bbuild -G"Unix Makefiles"
-    make -Cbuild -j8
-    make install -Cbuild/_deps/opencv-build -j8
+    cmake -Bbuild -G"Unix Makefiles"
+    make -Cbuild -j$(nproc) # opencv source
+    make install -Cbuild/_deps/opencv-build -j$(nproc) # install
 fi
 
-# # application
+# application
 cd ..
 cmake -Bbuild -G"Unix Makefiles"
-make -Cbuild -j8
+make -Cbuild -j$(nproc)
