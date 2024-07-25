@@ -1,28 +1,62 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
-#include <unistd.h>
+#include <chrono>
 
-int main() {
+#define FPS 30
 
-    char cwd[PATH_MAX];
-    if(getcwd(cwd, sizeof(cwd)) != NULL)
+using namespace std;
+using namespace cv;
+
+int main(int argc, char *argv[])
+{
+    auto prev_time = chrono::system_clock::now();
+
+    VideoCapture camera(0, CAP_V4L2);
+    Mat frame;
+
+    // Set the camera properties
+    camera.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G'));
+
+    namedWindow("frame", WINDOW_AUTOSIZE);
+
+    if (!camera.isOpened())
     {
-        printf("dir : %s", cwd);
+        cerr << "Camera open failed" << endl;
+        return -1;
     }
 
-    cv::Mat image = cv::imread("./img/example.jpg"); // 이미지 파일을 읽어옴
+    while (1)
+    {
+        auto current_time = chrono::system_clock::now();
+        chrono::duration<double> elapsed_seconds = current_time - prev_time;
 
-    if (image.empty()) {
-        std::cerr << "Could not read the image" << std::endl;
-        return 1;
+        if (elapsed_seconds.count() >= 1.0 / FPS)
+        {
+            try
+            {
+                camera >> frame;
+                if (frame.empty())
+                {
+                    cerr << "Captured empty frame" << endl;
+                    break;
+                }
+
+                imshow("frame", frame);
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << e.what() << '\n';
+            }
+
+            prev_time = current_time;
+        }
+
+        // Use 'q' to quit and 1ms delay to process the GUI events
+        if (waitKey(1) == 'q')
+            break;
     }
 
-    cv::imshow("Display window", image); // 이미지를 화면에 표시
-    int k = cv::waitKey(0); // 키 입력 대기
-
-    if (k == 's') {
-        cv::imwrite("output.jpg", image); // 키 입력이 's'이면 이미지를 저장
-    }
-
+    camera.release();
+    destroyAllWindows();
     return 0;
 }

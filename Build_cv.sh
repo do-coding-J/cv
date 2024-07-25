@@ -7,6 +7,24 @@ fi
 
 cd opencv
 
+# get dep
+if [ ! -d downloads ]; then
+    mkdir downloads
+fi
+
+cd downloads
+
+## openjpeg (in source build)
+# git clone -b v2.5.2 git@github.com:uclouvain/openjpeg.git
+# cd openjpeg
+# cmake -Bbuild -DCMAKE_BUILDTYPE=Release
+# make -Cbuild -j8
+
+## openBLAS
+
+
+
+
 # CMakeLists.txt 파일 생성 및 작성
 if [ ! -e CMakeLists.txt ]; then
     touch CMakeLists.txt
@@ -40,7 +58,7 @@ if [ ! -d include ]; then
     make install -Cbuild/_deps/opencv-build -j$(nproc) # install
 fi
 
-# application
-cd ..
-cmake -Bbuild -G"Unix Makefiles"
-make -Cbuild -j$(nproc)
+# # application
+# cd ..
+# cmake -Bbuild -G"Unix Makefiles"
+# make -Cbuild -j$(nproc)
