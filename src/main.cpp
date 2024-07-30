@@ -40,16 +40,15 @@ int main(int argc, char *argv[])
         cvtColor(frame, hsv, COLOR_BGR2HSV);
 
         // remove white space
-        Mat white_mask, white_output;
-        lb = 0;
-        lg = 0;
-        lr = 0;
-        hb = 50;
-        hg = 255;
-        hr = 255;
-        inRange(hsv, Scalar(lb,lg,lr), Scalar(hb,hg,hr), white_mask);
-        bitwise_not(frame, white_output, white_mask);
-        // cvtColor(frame, hsv, COLOR_BGR2HSV);
+        // Mat white_mask, white_output;
+        // lb = 0;
+        // lg = 0;
+        // lr = 0;
+        // hb = 50;
+        // hg = 255;
+        // hr = 255;
+        // inRange(hsv, Scalar(lb,lg,lr), Scalar(hb,hg,hr), white_mask);
+        // bitwise_not(frame, white_output, white_mask);
 
 
         // color parse
@@ -80,8 +79,8 @@ int main(int argc, char *argv[])
         }
 
         imshow("WINDOW_NAME1", frame);
-        // imshow("WINDOW_NAME2", color_output);
-        // imshow("WINDOW_NAME3", white_output);
+        // imshow("WINDOW_NAME2", white_output);
+        // imshow("WINDOW_NAME3", white_mask);
 
         // Use 'q' to quit and 1ms delay to process the GUI events
         if (waitKey(1) == 'q')
