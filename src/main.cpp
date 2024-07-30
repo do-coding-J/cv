@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     camera.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G'));
     camera.set(CAP_PROP_BUFFERSIZE, 1);
     camera.set(CAP_PROP_FPS, FPS);
-    camera.set(CAP_PROP_FRAME_WIDTH, 1200);
+    camera.set(CAP_PROP_FRAME_WIDTH, 1280);
     camera.set(CAP_PROP_FRAME_HEIGHT, 720);
 
     // namedWindow(WINDOW_NAME1, WINDOW_AUTOSIZE);
@@ -76,9 +76,10 @@ int main(int argc, char *argv[])
             // circle outline
             int radius = c[2];
             circle(frame, center, radius, Scalar(255, 0, 255), 3, LINE_AA);
+            cout << "X: " << c[0] << "\t Y: " << c[1] << endl;
         }
 
-        imshow("WINDOW_NAME1", frame);
+        // imshow("WINDOW_NAME1", frame);
         // imshow("WINDOW_NAME2", white_output);
         // imshow("WINDOW_NAME3", white_mask);
 
