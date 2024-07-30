@@ -3,21 +3,24 @@
 #include <chrono>
 
 #define FPS 30
+#define WINDOW_NAME1 "empty"
 
 using namespace std;
 using namespace cv;
 
 int main(int argc, char *argv[])
 {
-    auto prev_time = chrono::system_clock::now();
-
+    /*------------------------------------------------------------------------------------------*/
     VideoCapture camera(0, CAP_V4L2);
-    Mat frame;
 
     // Set the camera properties
     camera.set(CAP_PROP_FOURCC, VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    camera.set(CAP_PROP_BUFFERSIZE, 1);
+    camera.set(CAP_PROP_FPS, FPS);
+    camera.set(CAP_PROP_FRAME_WIDTH, 1200);
+    camera.set(CAP_PROP_FRAME_HEIGHT, 720);
 
-    namedWindow("frame", WINDOW_AUTOSIZE);
+    // namedWindow(WINDOW_NAME1, WINDOW_AUTOSIZE);
 
     if (!camera.isOpened())
     {
@@ -27,29 +30,58 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        auto current_time = chrono::system_clock::now();
-        chrono::duration<double> elapsed_seconds = current_time - prev_time;
+        Mat frame;
+        camera >> frame;
 
-        if (elapsed_seconds.count() >= 1.0 / FPS)
+        /*------------------------------------------------------------------------------------------*/
+
+        Mat hsv, color_mask, color_output;
+        uint8_t lb, lg, lr, hb, hg, hr;
+        cvtColor(frame, hsv, COLOR_BGR2HSV);
+
+        // remove white space
+        Mat white_mask, white_output;
+        lb = 0;
+        lg = 0;
+        lr = 0;
+        hb = 50;
+        hg = 255;
+        hr = 255;
+        inRange(hsv, Scalar(lb,lg,lr), Scalar(hb,hg,hr), white_mask);
+        bitwise_not(frame, white_output, white_mask);
+        // cvtColor(frame, hsv, COLOR_BGR2HSV);
+
+
+        // color parse
+        lb = 20;
+        lg = 0;
+        lr = 100;
+        hb = 70;
+        hg = 255;
+        hr = 255;
+        inRange(hsv, Scalar(lb,lg,lr), Scalar(hb,hg,hr), color_mask);
+        bitwise_and(frame, frame, color_output, color_mask);
+
+        /*------------------------------------------------------------------------------------------*/
+
+        Mat gray, gray_median;
+        vector<Vec3f> circles;
+        cvtColor(color_output, gray, COLOR_BGR2GRAY);
+        medianBlur(gray, gray_median, 5);
+        HoughCircles(gray_median, circles, HOUGH_GRADIENT, 1, 100, 50, 30, 0, 100);
+
+        for (size_t i = 0; i < circles.size(); i++)
         {
-            try
-            {
-                camera >> frame;
-                if (frame.empty())
-                {
-                    cerr << "Captured empty frame" << endl;
-                    break;
-                }
-
-                imshow("frame", frame);
-            }
-            catch (const std::exception &e)
-            {
-                std::cerr << e.what() << '\n';
-            }
-
-            prev_time = current_time;
+            Vec3i c = circles[i];
+            Point center = Point(c[0], c[1]);
+            // circle outline
+            int radius = c[2];
+            circle(frame, center, radius, Scalar(255, 0, 255), 3, LINE_AA);
         }
+
+        imshow("WINDOW_NAME1", frame);
+        // imshow("WINDOW_NAME2", color_output);
+        // imshow("WINDOW_NAME3", white_output);
 
         // Use 'q' to quit and 1ms delay to process the GUI events
         if (waitKey(1) == 'q')
